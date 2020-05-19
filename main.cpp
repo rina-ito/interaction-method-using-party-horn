@@ -13,14 +13,11 @@
 
 using namespace xn;
 
-//定数の宣言
 #define GL_WIN_SIZE_X 640
 #define GL_WIN_SIZE_Y 480
 #define GL_WIN_TOTAL 307200
 #define MAX_DEPTH 10000
 #define MAX_USER 10
-#define BLOCKMAX 100
-#define BLOCKPIECEMAX 500
 #define G -3.0
 
 #define XN_CALIBRATION_FILE_NAME "UserCalibration.bin"
@@ -107,17 +104,7 @@ XnPoint3D headPoint[MAX_USER];
 cv::Mat depthImage, depthDispImage, piroImage;
 std::vector< std::vector<cv::Point> > contours;
 
-//ブロック
-Vec_3D blockPos[BLOCKMAX];
-int usrScore[MAX_USER];
-Vec_3D blockPiecePos[BLOCKPIECEMAX];
-Vec_3D blockPieceSpd[BLOCKPIECEMAX];
-Vec_3D blockPieceRotAxis[BLOCKPIECEMAX];
-double blockPieceRot[BLOCKPIECEMAX];
-double blockPieceRotSpd[BLOCKPIECEMAX];
-int blockPieceID = 0;
 
-//メイン関数
 int main(int argc, char **argv)
 {
     //Kinect関連初期化
@@ -134,7 +121,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-//------------------------------------------------------- 関数 --------------------------------------------------------
+
 void initCV()
 {
     //画像
@@ -187,32 +174,6 @@ void initGL()
     glLightfv(GL_LIGHT0, GL_AMBIENT, col);  //環境光
     col[0] = 1.0; col[1] = 1.0; col[2] = 1.0; col[3] = 1.0;
     glLightfv(GL_LIGHT0, GL_SPECULAR, col);  //鏡面反射光
-    
-    //ブロック
-    for (int i=0; i<BLOCKMAX; i++) {
-        blockPos[i].x = -450.0+100.0*(i%10);
-        blockPos[i].y = -500.0+100.0*(i/10);
-        blockPos[i].z = 1000.0;
-        blockPos[i].flg = 2;
-    }
-    
-    //---------------- テクスチャの番号登録 ----------------
-    
-    // 数字
-    cv::Mat textureImage;
-    char fileName[100];
-    for (int i=0; i<10; i++) {
-        sprintf(fileName, "./png/num%d.png", i);
-        textureImage = cv::imread(fileName, cv::IMREAD_UNCHANGED);
-        glBindTexture(GL_TEXTURE_2D, i);  //テクスチャ0番
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage.cols, textureImage.rows, 0, GL_BGRA, GL_UNSIGNED_BYTE, textureImage.data);
-    }
-    
-    for (int i=0; i<MAX_USER; i++) {
-        usrScore[i] = 9;
-    }
 }
 
 //ディスプレイコールバック関数
@@ -251,7 +212,7 @@ void display()
     glLightfv(GL_LIGHT0, GL_POSITION, pos);
     
     
-    //------------------------------Kinectデータ取得，処理，表示------------------------------
+    //Kinectデータ取得，処理，表示
     //データ取得準備
     XnStatus rc = XN_STATUS_OK;
     
@@ -402,14 +363,6 @@ void display()
     //描画実行
     glutSwapBuffers();
     
-    //ブロック破片座標更新
-    for (int i=0; i<BLOCKPIECEMAX; i++) {
-        blockPiecePos[i].x += blockPieceSpd[i].x; blockPiecePos[i].y += blockPieceSpd[i].y; blockPiecePos[i].z += blockPieceSpd[i].z;
-        blockPieceSpd[i].y += G;
-        if (blockPieceSpd[i].y<-10000) {
-            blockPieceSpd[i].x = blockPieceSpd[i].y = blockPieceSpd[i].z = 0;
-        }
-    }
 }
 
 //リサイズコールバック理関数
@@ -517,21 +470,11 @@ void keyboard(unsigned char key, int x, int y)
             glutFullScreen();
             break;
             
-        case 'r':
-            for (int i=0; i<BLOCKMAX; i++) {
-                blockPos[i].flg = 2;
-            }
-            for (int i=0; i<MAX_USER; i++) {
-                usrScore[i] = 9;
-            }
-            break;
-            
         default:
             break;
     }
 }
 
-//------------------------------------------------------- Kinect関係 --------------------------------------------------------
 //Kinect初期化
 int initKinect()
 {
@@ -863,5 +806,4 @@ void XN_CALLBACK_TYPE UserCalibration_CalibrationComplete(SkeletonCapability& ca
         }
     }
 }
-//------------------------------------------------------- Kinect関係(終わり) --------------------------------------------------------
 

@@ -1,1 +1,1 @@
-g++ -O3 model.cpp -framework OpenGL -framework GLUT -I/usr/include/ni -lOpenNI `pkg-config --cflags opencv --libs opencv` -Wno-deprecated
+g++ -O3 main.cpp -framework OpenGL -framework GLUT -I/usr/include/ni -lOpenNI `pkg-config --cflags opencv --libs opencv` -Wno-deprecated
